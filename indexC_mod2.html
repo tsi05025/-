@@ -1,0 +1,2076 @@
+<!DOCTYPE html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Disaster Management Card Game - Theme C</title>
+    <!-- React & ReactDOM & Babel CDN -->
+    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+    <style>
+      body {
+        margin: 0;
+        font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+          sans-serif;
+        background: #e5f3ec; /* 옅은 민트/그린 계열 배경 */
+        color: #111827; /* 진한 텍스트 */
+      }
+
+      .app {
+        display: flex;
+        flex-direction: column;
+        min-height: 100vh;
+      }
+
+      header {
+        padding: 16px 24px;
+        border-bottom: 1px solid #d1d5db;
+        background: #f9fafb;
+      }
+
+      header h1 {
+        margin: 0;
+        font-size: 20px;
+        color: #065f46;
+      }
+
+      header small {
+        color: #6b7280;
+      }
+
+      main {
+        flex: 1;
+        display: grid;
+        grid-template-columns: 2fr 1fr;
+        gap: 12px;
+        padding: 12px;
+      }
+
+      .left-column,
+      .right-column {
+        background: #ffffff;
+        border-radius: 12px;
+        padding: 12px;
+        box-shadow: 0 8px 20px rgba(15, 118, 110, 0.08);
+        border: 1px solid #d1d5db;
+      }
+
+      .section-title {
+        font-size: 14px;
+        font-weight: 600;
+        margin-bottom: 8px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        color: #064e3b;
+      }
+
+      .section-title span {
+        font-size: 11px;
+        font-weight: 400;
+        color: #6b7280;
+      }
+
+      .phase-row {
+        margin-bottom: 8px;
+      }
+
+      .phase-row-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 4px;
+      }
+
+      .phase-name {
+        font-size: 13px;
+        font-weight: 600;
+      }
+
+      .phase-name.mitigation {
+        color: #16a34a; /* 밝은 그린 */
+      }
+
+      .phase-name.preparedness {
+        color: #0891b2; /* 푸른 민트 */
+      }
+
+      .phase-name.response {
+        color: #ea580c; /* 밝은 오렌지 */
+      }
+
+      .phase-count {
+        font-size: 11px;
+        color: #6b7280;
+      }
+
+      .card-row {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+      }
+
+      .card {
+        background: #f9fafb;
+        border-radius: 10px;
+        border: 1px solid #e5e7eb;
+        padding: 10px;
+        width: 200px;
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        font-size: 11px;
+      }
+
+      .card-image-wrapper {
+        width: 100%;
+        height: 110px;
+        overflow: hidden;
+        border-radius: 8px;
+        border: 1px solid #e5e7eb;
+        margin: 4px auto;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #e5f3ec;
+      }
+
+      .card-image-wrapper img {
+        height: 100%;
+        width: auto;
+        display: block;
+      }
+
+      .card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      .card-name {
+        font-weight: 700;
+        font-size: 13px;
+        color: #111827;
+      }
+
+      .card-description {
+        color: #4b5563;
+        font-size: 10px;
+        min-height: 32px;
+      }
+
+      .card-domain {
+        color: #9ca3af;
+        font-size: 9px;
+        margin-top: 2px;
+      }
+
+      .card-footer {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 4px;
+      }
+
+      .cost {
+        font-size: 11px;
+        font-weight: 600;
+        color: #ca8a04;
+      }
+
+      button {
+        border-radius: 999px;
+        border: none;
+        font-size: 11px;
+        padding: 4px 8px;
+        cursor: pointer;
+        background: #16a34a;
+        color: #f9fafb;
+        transition: background 0.15s ease, transform 0.05s ease,
+          box-shadow 0.1s ease;
+      }
+
+      button:hover:not(:disabled) {
+        background: #22c55e;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 8px rgba(22, 163, 74, 0.35);
+      }
+
+      button:disabled {
+        opacity: 0.4;
+        cursor: default;
+        transform: none;
+        box-shadow: none;
+      }
+
+      .small-btn {
+        font-size: 10px;
+        padding: 5px 8px;
+      }
+
+      .danger-btn {
+        background: #ef4444;
+      }
+
+      .danger-btn:hover:not(:disabled) {
+        background: #f97373;
+        box-shadow: 0 4px 8px rgba(239, 68, 68, 0.35);
+      }
+
+      .secondary-btn {
+        background: #e5e7eb;
+        color: #111827;
+      }
+
+      .secondary-btn:hover:not(:disabled) {
+        background: #d1d5db;
+        box-shadow: 0 4px 8px rgba(148, 163, 184, 0.35);
+      }
+
+      .controls {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        margin-bottom: 8px;
+      }
+
+      .player-panel {
+        border-radius: 10px;
+        border: 1px solid #e5e7eb;
+        padding: 8px;
+        margin-bottom: 8px;
+        background: #f9fafb;
+      }
+
+      .player-panel.active {
+        border-color: #16a34a;
+        box-shadow: 0 0 0 1px rgba(22, 163, 74, 0.5);
+      }
+
+      .player-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 4px;
+      }
+
+      .player-name {
+        font-size: 13px;
+        font-weight: 600;
+        color: #065f46;
+      }
+
+      .player-money {
+        font-size: 12px;
+        color: #15803d;
+      }
+
+      .player-cards {
+        max-height: 120px;
+        overflow-y: auto;
+        font-size: 11px;
+        border-top: 1px solid #e5e7eb;
+        margin-top: 4px;
+        padding-top: 4px;
+      }
+
+      .player-card-item {
+        display: flex;
+        justify-content: space-between;
+        gap: 6px;
+        border-bottom: 1px solid #e5e7eb;
+        padding: 2px 0;
+        cursor: pointer;
+      }
+
+      .player-card-item:hover {
+        background: #e5f3ec;
+      }
+
+      .player-card-name {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .badge {
+        font-size: 9px;
+        padding: 1px 4px;
+        border-radius: 999px;
+        background: #ecfdf3;
+        border: 1px solid #bbf7d0;
+        color: #166534;
+      }
+
+      .disaster-card {
+        border-radius: 10px;
+        border: 1px solid #e5e7eb;
+        padding: 8px;
+        background: #f9fafb;
+        margin-bottom: 8px;
+      }
+
+      .disaster-name {
+        font-size: 13px;
+        font-weight: 600;
+        margin-bottom: 4px;
+        color: #064e3b;
+      }
+
+      .disaster-desc {
+        font-size: 11px;
+        color: #4b5563;
+        margin-bottom: 4px;
+      }
+
+      .disaster-tags {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 4px;
+      }
+
+      .scores {
+        font-size: 12px;
+      }
+
+      .score-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 2px 0;
+      }
+
+      .setup {
+        display: flex;
+        gap: 6px;
+        align-items: center;
+        margin-top: 8px;
+        font-size: 12px;
+      }
+
+      select {
+        background: #ffffff;
+        color: #111827;
+        border-radius: 999px;
+        border: 1px solid #d1d5db;
+        padding: 2px 8px;
+        font-size: 12px;
+      }
+
+      footer {
+        padding: 6px 12px;
+        font-size: 10px;
+        color: #6b7280;
+        border-top: 1px solid #d1d5db;
+        background: #f9fafb;
+        text-align: right;
+      }
+
+      /* 공통 모달 스타일 */
+      .modal {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: #ffffff;
+        border-radius: 12px;
+        border: 1px solid #e5e7eb;
+        padding: 14px;
+        width: 320px;
+        max-width: 90vw;
+        box-shadow: 0 10px 40px rgba(15, 118, 110, 0.25);
+        z-index: 1000;
+      }
+
+      .modal-title {
+        font-size: 13px;
+        font-weight: 600;
+        margin-bottom: 6px;
+        color: #065f46;
+      }
+
+      .modal-body {
+        font-size: 11px;
+        color: #111827;
+      }
+
+      .modal-footer {
+        margin-top: 8px;
+        text-align: right;
+      }
+
+      .modal-large {
+        width: 380px;
+      }
+
+      .modal-xl {
+        width: 480px;
+        max-width: 95vw;
+      }
+
+      .preview-table {
+        margin-top: 4px;
+        border-top: 1px solid #e5e7eb;
+        padding-top: 4px;
+        font-size: 10px;
+      }
+
+      .preview-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 1px 0;
+      }
+
+      .player-avatar {
+        width: 26px;
+        height: 26px;
+        border-radius: 999px;
+        background: #dcfce7;
+        border: 1px solid #bbf7d0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 11px;
+        color: #166534;
+        font-weight: 600;
+      }
+
+      .player-header-left {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+
+      .modal-image-wrapper {
+        width: 100%;
+        height: 150px;
+        overflow: hidden;
+        border-radius: 8px;
+        border: 1px solid #e5e7eb;
+        margin: 4px 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #e5f3ec;
+      }
+
+      .modal-image-wrapper img {
+        height: 100%;
+        width: auto;
+        display: block;
+      }
+
+      .tag {
+        border-radius: 999px;
+        padding: 1px 6px;
+        border: 1px solid #bae6fd;
+        font-size: 9px;
+        color: #0369a1;
+        background: #eff6ff;
+      }
+
+      /* 튜토리얼 모달 */
+      .tutorial-modal {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 420px;
+        background: #ffffff;
+        border: 1px solid #d1d5db;
+        border-radius: 12px;
+        padding: 14px 18px;
+        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.25);
+        z-index: 2000;
+      }
+
+      .tutorial-title {
+        font-size: 16px;
+        font-weight: 700;
+        margin-bottom: 10px;
+        color: #111827;
+      }
+
+      .tutorial-body {
+        font-size: 13px;
+        color: #374151;
+        line-height: 1.5;
+        max-height: 360px;
+        overflow-y: auto;
+      }
+
+      .tutorial-body p {
+        margin-bottom: 10px;
+      }
+
+      .tutorial-body ul {
+        margin: 4px 0 8px 16px;
+        padding: 0;
+      }
+
+      .tutorial-body li {
+        margin-bottom: 4px;
+      }
+
+      .tutorial-footer {
+        margin-top: 12px;
+        text-align: right;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+      const { useState, useEffect } = React;
+
+      // ---------------------------
+      // 데이터 정의
+      // ---------------------------
+
+      const DISASTER_CARDS = [
+        {
+          id: "D1",
+          name: "대홍수 (Flood)",
+          description:
+            "폭우와 댐 방류로 하천과 도심 전역이 침수된다. 대피, 구조, 임시 주거 확보가 핵심이다.",
+          image: "https://picsum.photos/seed/flood/400/200",
+          scoringRule: {
+            targetTags: ["Flood", "Water", "Evacuation"],
+            pointsPerCard: 4,
+            phaseSetBonus: 6,
+          },
+        },
+        {
+          id: "D2",
+          name: "폭염 (Heatwave)",
+          description:
+            "열돔과 전력 공급 불안정으로 인해 건강 피해와 정전 위험이 증가한다.",
+          image: "https://picsum.photos/seed/heatwave/400/200",
+          scoringRule: {
+            targetTags: ["Heatwave", "Power", "Health"],
+            pointsPerCard: 4,
+            phaseSetBonus: 6,
+          },
+        },
+        {
+          id: "D3",
+          name: "대지진 (Earthquake)",
+          description:
+            "도시 기반시설 붕괴, 대규모 구조작전, 임시 대피소 운영이 필수적이다.",
+          image: "https://picsum.photos/seed/earthquake/400/200",
+          scoringRule: {
+            targetTags: ["Earthquake", "Infrastructure", "Shelter"],
+            pointsPerCard: 4,
+            phaseSetBonus: 6,
+          },
+        },
+        {
+          id: "D4",
+          name: "팬데믹 (Pandemic)",
+          description:
+            "감염 확산, 의료 체계 붕괴, 공중보건 대응이 핵심이다.",
+          image: "https://picsum.photos/seed/pandemic/400/200",
+          scoringRule: {
+            targetTags: ["Pandemic", "Medical", "PublicHealth"],
+            pointsPerCard: 4,
+            phaseSetBonus: 6,
+          },
+        },
+        {
+          id: "D5",
+          name: "대정전/사이버 공격 (Blackout)",
+          description:
+            "전력·통신망 붕괴로 지휘통제가 불가능해지며, 대규모 시스템 안정화 작업이 필요하다.",
+          image: "https://picsum.photos/seed/blackout/400/200",
+          scoringRule: {
+            targetTags: ["Blackout", "Communication", "Cyber"],
+            pointsPerCard: 4,
+            phaseSetBonus: 6,
+          },
+        },
+      ];
+
+      const SCENARIOS = [
+        {
+          id: "S1",
+          name: "해안 저지대 항구 도시",
+          image: "https://picsum.photos/seed/coastal_city/600/300",
+          description:
+            "하천과 바다가 맞닿은 항구 도시입니다. 해수면 상승과 태풍, 집중호우에 취약해 보입니다.",
+          weights: {
+            D1: 5,
+            D2: 2,
+            D3: 1,
+            D4: 2,
+            D5: 2,
+          },
+        },
+        {
+          id: "S2",
+          name: "내륙 열섬 대도시",
+          image: "https://picsum.photos/seed/heat_city/600/300",
+          description:
+            "고층 건물과 아스팔트로 뒤덮인 내륙 대도시입니다. 여름철 폭염과 대기오염이 심각해 보입니다.",
+          weights: {
+            D1: 1,
+            D2: 5,
+            D3: 1,
+            D4: 2,
+            D5: 2,
+          },
+        },
+        {
+          id: "S3",
+          name: "단층대 인근 중소도시",
+          image: "https://picsum.photos/seed/quake_city/600/300",
+          description:
+            "산지와 계곡이 인접한 단층대 인근 중소도시입니다. 지진과 산사태 위험이 커 보입니다.",
+          weights: {
+            D1: 2,
+            D2: 1,
+            D3: 5,
+            D4: 1,
+            D5: 2,
+          },
+        },
+        {
+          id: "S4",
+          name: "글로벌 허브 메가시티",
+          image: "https://picsum.photos/seed/mega_city/600/300",
+          description:
+            "국제공항과 항만, 고밀도 교통망을 가진 초대형 도시입니다. 팬데믹과 사이버 공격에 취약해 보입니다.",
+          weights: {
+            D1: 1,
+            D2: 2,
+            D3: 1,
+            D4: 4,
+            D5: 4,
+          },
+        },
+      ];
+
+      const MITIGATION_TEMPLATES = [
+        {
+          id: "M-FLOOD-1",
+          name: "홍수 위험지도 제작",
+          phase: "Mitigation",
+          type: "hazard-specific",
+          tags: ["Flood", "Water"],
+          domain: "위험도 평가 / 공간정보",
+          cost: 80,
+          image: "https://picsum.photos/seed/m_flood1/200/120",
+          description:
+            "홍수 취약 지역을 사전에 파악해 대피 계획을 정교화한다.",
+        },
+        {
+          id: "M-FLOOD-2",
+          name: "하천 제방 보강",
+          phase: "Mitigation",
+          type: "hazard-specific",
+          tags: ["Flood", "Infrastructure"],
+          domain: "토목 / 인프라",
+          cost: 100,
+          image: "https://picsum.photos/seed/m_flood2/200/120",
+          description: "제방을 보강해 범람 확률을 줄인다.",
+        },
+        {
+          id: "M-HEAT-1",
+          name: "쿨 루프·쿨 페이브먼트 도입",
+          phase: "Mitigation",
+          type: "hazard-specific",
+          tags: ["Heatwave", "Health"],
+          domain: "도시 기후 / 보건",
+          cost: 70,
+          image: "https://picsum.photos/seed/m_heat1/200/120",
+          description: "도시 열섬 효과를 완화해 폭염 피해를 줄인다.",
+        },
+        {
+          id: "M-ALL-1",
+          name: "다재난 위험평가(Hazard Mapping)",
+          phase: "Mitigation",
+          type: "all-hazard",
+          tags: ["AllHazard"],
+          domain: "재난 거버넌스",
+          cost: 60,
+          image: "https://picsum.photos/seed/m_all1/200/120",
+          description: "다양한 재난에 대한 기초 위험자료를 확보한다.",
+        },
+        {
+          id: "M-QUAKE-1",
+          name: "내진 보강 프로그램",
+          phase: "Mitigation",
+          type: "hazard-specific",
+          tags: ["Earthquake", "Infrastructure"],
+          domain: "구조공학",
+          cost: 110,
+          image: "https://picsum.photos/seed/m_quake1/200/120",
+          description: "공공시설의 내진 성능을 향상시킨다.",
+        },
+        {
+          id: "M-PAN-1",
+          name: "백신 연구 투자",
+          phase: "Mitigation",
+          type: "hazard-specific",
+          tags: ["Pandemic", "Medical"],
+          domain: "의료 / R&D",
+          cost: 90,
+          image: "https://picsum.photos/seed/m_pan1/200/120",
+          description: "신종 감염병에 대한 백신 개발 역량을 높인다.",
+        },
+        {
+          id: "M-BLACKOUT-1",
+          name: "전력망 이중화",
+          phase: "Mitigation",
+          type: "hazard-specific",
+          tags: ["Blackout", "Power"],
+          domain: "에너지 / 전력계통",
+          cost: 100,
+          image: "https://picsum.photos/seed/m_blackout1/200/120",
+          description: "주요 시설의 전력망을 이중화해 정전을 줄인다.",
+        },
+      ];
+
+      const PREPAREDNESS_TEMPLATES = [
+        {
+          id: "P-FLOOD-1",
+          name: "홍수 대피훈련",
+          phase: "Preparedness",
+          type: "hazard-specific",
+          tags: ["Flood", "Evacuation"],
+          domain: "교육 / 훈련",
+          cost: 60,
+          image: "https://picsum.photos/seed/p_flood1/200/120",
+          description: "정기적인 대피 훈련으로 혼란을 줄인다.",
+        },
+        {
+          id: "P-HEAT-1",
+          name: "폭염 취약계층 등록제",
+          phase: "Preparedness",
+          type: "hazard-specific",
+          tags: ["Heatwave", "Health"],
+          domain: "사회복지 / 보건",
+          cost: 50,
+          image: "https://picsum.photos/seed/p_heat1/200/120",
+          description: "취약계층을 사전 파악해 맞춤 대응을 준비한다.",
+        },
+        {
+          id: "P-QUAKE-1",
+          name: "지진 대피 교육",
+          phase: "Preparedness",
+          type: "hazard-specific",
+          tags: ["Earthquake", "Shelter"],
+          domain: "교육 / 커뮤니티",
+          cost: 55,
+          image: "https://picsum.photos/seed/p_quake1/200/120",
+          description: "안전한 대피요령과 대피소 위치를 교육한다.",
+        },
+        {
+          id: "P-PAN-1",
+          name: "비상 의료물자 비축",
+          phase: "Preparedness",
+          type: "hazard-specific",
+          tags: ["Pandemic", "Medical"],
+          domain: "보건 / 로지스틱스",
+          cost: 75,
+          image: "https://picsum.photos/seed/p_pan1/200/120",
+          description: "마스크, 약품, 보호구 등을 사전에 비축한다.",
+        },
+        {
+          id: "P-BLACKOUT-1",
+          name: "비상 발전기 점검",
+          phase: "Preparedness",
+          type: "hazard-specific",
+          tags: ["Blackout", "Power"],
+          domain: "시설관리",
+          cost: 65,
+          image: "https://picsum.photos/seed/p_blackout1/200/120",
+          description: "필수시설의 비상 발전기를 정기적으로 점검한다.",
+        },
+        {
+          id: "P-ALL-1",
+          name: "통합 비상 매뉴얼 제작",
+          phase: "Preparedness",
+          type: "all-hazard",
+          tags: ["AllHazard"],
+          domain: "거버넌스 / 기획",
+          cost: 70,
+          image: "https://picsum.photos/seed/p_all1/200/120",
+          description: "여러 재난 상황을 포괄하는 실행 매뉴얼을 작성한다.",
+        },
+      ];
+
+      const RESPONSE_TEMPLATES = [
+        {
+          id: "R-FLOOD-1",
+          name: "수중 구조대 투입",
+          phase: "Response",
+          type: "hazard-specific",
+          tags: ["Flood", "Evacuation"],
+          domain: "구조 / 수난구조",
+          cost: 90,
+          image: "https://picsum.photos/seed/r_flood1/200/120",
+          description: "고립된 주민을 신속히 구조한다.",
+        },
+        {
+          id: "R-HEAT-1",
+          name: "무더위 쉼터 운영",
+          phase: "Response",
+          type: "hazard-specific",
+          tags: ["Heatwave", "Health"],
+          domain: "복지 / 시설운영",
+          cost: 60,
+          image: "https://picsum.photos/seed/r_heat1/200/120",
+          description: "냉방이 가능한 쉼터를 개방한다.",
+        },
+        {
+          id: "R-QUAKE-1",
+          name: "도심 대피소 개방",
+          phase: "Response",
+          type: "hazard-specific",
+          tags: ["Earthquake", "Shelter"],
+          domain: "시설 / 주거",
+          cost: 80,
+          image: "https://picsum.photos/seed/r_quake1/200/120",
+          description: "체육관, 학교 등을 임시 대피소로 전환한다.",
+        },
+        {
+          id: "R-PAN-1",
+          name: "선별 진료소 설치",
+          phase: "Response",
+          type: "hazard-specific",
+          tags: ["Pandemic", "PublicHealth"],
+          domain: "공중보건",
+          cost: 75,
+          image: "https://picsum.photos/seed/r_pan1/200/120",
+          description: "감염 의심 환자를 분리해 검사한다.",
+        },
+        {
+          id: "R-BLACKOUT-1",
+          name: "비상 전력 공급",
+          phase: "Response",
+          type: "hazard-specific",
+          tags: ["Blackout", "Power"],
+          domain: "에너지 / 운영",
+          cost: 95,
+          image: "https://picsum.photos/seed/r_blackout1/200/120",
+          description: "중요 시설에 우선적으로 전력을 공급한다.",
+        },
+        {
+          id: "R-ALL-1",
+          name: "통합 지휘본부(ICS) 가동",
+          phase: "Response",
+          type: "all-hazard",
+          tags: ["AllHazard"],
+          domain: "ICS / 지휘통제",
+          cost: 85,
+          image: "https://picsum.photos/seed/r_all1/200/120",
+          description: "여러 기관을 하나의 지휘체계로 통합한다.",
+        },
+      ];
+
+      const SPECIAL_CARDS = [
+        {
+          id: "S-BONUS-MONEY-1",
+          name: "긴급 예산 승인",
+          effectKey: "GAIN_MONEY_50",
+          image: "https://picsum.photos/seed/s_budget/200/120",
+          description: "추가 예산이 긴급히 승인되었다.",
+          effectText: "즉시 자금 50을 얻는다.",
+        },
+        {
+          id: "S-BONUS-MONEY-2",
+          name: "국제 지원금 유치",
+          effectKey: "GAIN_MONEY_80",
+          image: "https://picsum.photos/seed/s_grant/200/120",
+          description: "국제기구로부터 재난복구 지원금을 받았다.",
+          effectText: "즉시 자금 80을 얻는다.",
+        },
+        {
+          id: "S-DISCOUNT-1",
+          name: "입찰 경쟁 성공",
+          effectKey: "DISCOUNT_NEXT_20",
+          image: "https://picsum.photos/seed/s_discount/200/120",
+          description: "유리한 입찰을 따내면서 사업비를 절감했다.",
+          effectText: "이번 턴 다음에 구매하는 카드 1장의 비용이 20 감소한다.",
+        },
+        {
+          id: "S-FREE-CARD-1",
+          name: "기부 물자 도착",
+          effectKey: "FREE_CHEAP_CARD",
+          image: "https://picsum.photos/seed/s_freecard/200/120",
+          description: "민간단체에서 물자를 대량 기부했다.",
+          effectText: "비용 70 이하 카드 1장을 무료로 구매할 수 있다.",
+        },
+      ];
+
+      const START_MONEY = 500;
+      const MARKET_SIZE_PER_PHASE = 4;
+      const MITIGATION_DECK_SIZE = 40;
+      const PREPAREDNESS_DECK_SIZE = 30;
+      const RESPONSE_DECK_SIZE = 25;
+      const SPECIAL_DECK_SIZE = 20;
+      const MAX_SPECIAL_DRAWS = 3;
+
+      function shuffle(array) {
+        const arr = [...array];
+        for (let i = arr.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [arr[i], arr[j]] = [arr[j], arr[i]];
+        }
+        return arr;
+      }
+
+      function buildDeckFromTemplates(templates, count, prefix) {
+        const deck = [];
+        for (let i = 0; i < count; i++) {
+          const base = templates[i % templates.length];
+          deck.push({
+            ...base,
+            id: `${base.id}-${prefix}${i}`,
+          });
+        }
+        return deck;
+      }
+
+      function drawFromDeck(deck, count) {
+        const drawn = deck.slice(0, count);
+        const remaining = deck.slice(count);
+        return [drawn, remaining];
+      }
+
+      function calculateScores(players, disasterCard) {
+        const { targetTags, pointsPerCard, phaseSetBonus } =
+          disasterCard.scoringRule;
+
+        return players.map((player) => {
+          let score = 0;
+          const phasesHit = {
+            Mitigation: false,
+            Preparedness: false,
+            Response: false,
+          };
+
+          player.cards.forEach((card) => {
+            const hasDisasterTag = card.tags.some((tag) =>
+              targetTags.includes(tag)
+            );
+            if (card.tags.includes("AllHazard")) {
+              score += 2;
+            }
+            if (hasDisasterTag) {
+              score += pointsPerCard;
+              if (phasesHit[card.phase] === false) {
+                phasesHit[card.phase] = true;
+              }
+            }
+          });
+
+          if (
+            phasesHit.Mitigation &&
+            phasesHit.Preparedness &&
+            phasesHit.Response
+          ) {
+            score += phaseSetBonus;
+          }
+
+          return { playerId: player.id, name: player.name, score };
+        });
+      }
+
+      function CardView({ card, onBuy, disabled }) {
+        if (!card) return null;
+        const isMit = card.phase === "Mitigation";
+        const isPrep = card.phase === "Preparedness";
+        const isResp = card.phase === "Response";
+
+        const phaseClass = isMit
+          ? "mitigation"
+          : isPrep
+          ? "preparedness"
+          : "response";
+
+        return (
+          <div className="card">
+            <div className="card-header">
+              <div className="card-name">{card.name}</div>
+              <span className={`badge ${phaseClass}`}>{card.phase}</span>
+            </div>
+            <div className="card-image-wrapper">
+              <img src={card.image} alt={card.name} />
+            </div>
+            
+            <div className="card-description">{card.description}</div>
+            {card.domain && (
+              <div className="card-domain">도메인: {card.domain}</div>
+            )}
+            <div className="card-footer">
+              <div className="cost">${card.cost}</div>
+              <button className="small- btn" onClick={onBuy} disabled={disabled}>
+                구매
+              </button>
+            </div>
+          </div>
+        );
+      }
+
+      function App() {
+        const [numPlayers, setNumPlayers] = useState(2);
+        const [players, setPlayers] = useState([]);
+        const [currentPlayerIndex, setCurrentPlayerIndex] = useState(0);
+
+        const [mitigationDeck, setMitigationDeck] = useState([]);
+        const [preparednessDeck, setPreparednessDeck] = useState([]);
+        const [responseDeck, setResponseDeck] = useState([]);
+        const [specialDeck, setSpecialDeck] = useState([]);
+
+        const [marketMitigation, setMarketMitigation] = useState([]);
+        const [marketPreparedness, setMarketPreparedness] = useState([]);
+        const [marketResponse, setMarketResponse] = useState([]);
+
+        const [chosenDisaster, setChosenDisaster] = useState(null);
+        const [scores, setScores] = useState(null);
+        const [gameStarted, setGameStarted] = useState(false);
+        const [gameEnded, setGameEnded] = useState(false);
+
+        const [nextDiscount, setNextDiscount] = useState(0);
+        const [freeCheapCard, setFreeCheapCard] = useState(false);
+
+        const [lastSpecialDrawn, setLastSpecialDrawn] = useState(null);
+        const [lastBoughtCard, setLastBoughtCard] = useState(null);
+        const [detailCard, setDetailCard] = useState(null);
+
+        const [currentScenario, setCurrentScenario] = useState(null);
+        const [showScenarioModal, setShowScenarioModal] = useState(false);
+        const [showResultModal, setShowResultModal] = useState(false);
+
+        const [showTutorial, setShowTutorial] = useState(false);
+
+        const currentPlayer = players[currentPlayerIndex] || null;
+
+        function startGame() {
+          const initialPlayers = Array.from({ length: numPlayers }).map(
+            (_, idx) => ({
+              id: idx,
+              name: `플레이어 ${idx + 1}`,
+              money: START_MONEY,
+              cards: [],
+              specials: [],
+              specialDraws: 0,
+            })
+          );
+
+          const mitDeckRaw = buildDeckFromTemplates(
+            MITIGATION_TEMPLATES,
+            MITIGATION_DECK_SIZE,
+            "M"
+          );
+          const prepDeckRaw = buildDeckFromTemplates(
+            PREPAREDNESS_TEMPLATES,
+            PREPAREDNESS_DECK_SIZE,
+            "P"
+          );
+          const respDeckRaw = buildDeckFromTemplates(
+            RESPONSE_TEMPLATES,
+            RESPONSE_DECK_SIZE,
+            "R"
+          );
+          const spDeckRaw = buildDeckFromTemplates(
+            SPECIAL_CARDS,
+            SPECIAL_DECK_SIZE,
+            "S"
+          );
+
+          const mitDeck = shuffle(mitDeckRaw);
+          const prepDeck = shuffle(prepDeckRaw);
+          const respDeck = shuffle(respDeckRaw);
+          const spDeck = shuffle(spDeckRaw);
+
+          const [mitMarket, mitRemain] = drawFromDeck(
+            mitDeck,
+            MARKET_SIZE_PER_PHASE
+          );
+          const [prepMarket, prepRemain] = drawFromDeck(
+            prepDeck,
+            MARKET_SIZE_PER_PHASE
+          );
+          const [respMarket, respRemain] = drawFromDeck(
+            respDeck,
+            MARKET_SIZE_PER_PHASE
+          );
+
+          const scenario =
+            SCENARIOS[Math.floor(Math.random() * SCENARIOS.length)];
+
+          setPlayers(initialPlayers);
+          setCurrentPlayerIndex(0);
+          setMitigationDeck(mitRemain);
+          setPreparednessDeck(prepRemain);
+          setResponseDeck(respRemain);
+          setSpecialDeck(spDeck);
+          setMarketMitigation(mitMarket);
+          setMarketPreparedness(prepMarket);
+          setMarketResponse(respMarket);
+          setChosenDisaster(null);
+          setScores(null);
+          setGameEnded(false);
+          setGameStarted(true);
+          setNextDiscount(0);
+          setFreeCheapCard(false);
+          setLastSpecialDrawn(null);
+          setLastBoughtCard(null);
+          setDetailCard(null);
+          setCurrentScenario(scenario);
+          setShowScenarioModal(true);
+          setShowResultModal(false);
+        }
+
+        function handleRestart() {
+          setShowResultModal(false);
+          setChosenDisaster(null);
+          setScores(null);
+          setGameEnded(false);
+          startGame();
+        }
+
+        function weightedRandomDisaster() {
+          if (!currentScenario) {
+            return DISASTER_CARDS[
+              Math.floor(Math.random() * DISASTER_CARDS.length)
+            ];
+          }
+          const weights = DISASTER_CARDS.map(
+            (d) => currentScenario.weights[d.id] || 1
+          );
+          const total = weights.reduce((a, b) => a + b, 0);
+          let r = Math.random() * total;
+          for (let i = 0; i < DISASTER_CARDS.length; i++) {
+            r -= weights[i];
+            if (r <= 0) return DISASTER_CARDS[i];
+          }
+          return DISASTER_CARDS[DISASTER_CARDS.length - 1];
+        }
+
+        function endGame() {
+          if (!players.length) return;
+          const selected = weightedRandomDisaster();
+          const scoreResult = calculateScores(players, selected);
+
+          setChosenDisaster(selected);
+          setScores(scoreResult);
+          setGameEnded(true);
+          setShowResultModal(true);
+        }
+
+        function nextPlayer() {
+          if (!players.length) return;
+          setCurrentPlayerIndex((prev) => (prev + 1) % players.length);
+          setNextDiscount(0);
+          setFreeCheapCard(false);
+        }
+
+        function applySpecialEffect(card) {
+          const effectKey = card.effectKey;
+          switch (effectKey) {
+            case "GAIN_MONEY_50": {
+              setPlayers((prev) =>
+                prev.map((p, idx) =>
+                  idx === currentPlayerIndex
+                    ? { ...p, money: p.money + 50 }
+                    : p
+                )
+              );
+              break;
+            }
+            case "GAIN_MONEY_80": {
+              setPlayers((prev) =>
+                prev.map((p, idx) =>
+                  idx === currentPlayerIndex
+                    ? { ...p, money: p.money + 80 }
+                    : p
+                )
+              );
+              break;
+            }
+            case "DISCOUNT_NEXT_20": {
+              setNextDiscount(20);
+              break;
+            }
+            case "FREE_CHEAP_CARD": {
+              setFreeCheapCard(true);
+              break;
+            }
+            default:
+              break;
+          }
+          setLastSpecialDrawn(card);
+        }
+
+        function handleDrawSpecial() {
+          if (!gameStarted || gameEnded) return;
+          if (!specialDeck.length || !currentPlayer) return;
+          const player = currentPlayer;
+          if (player.specialDraws >= MAX_SPECIAL_DRAWS) {
+            alert("이 플레이어는 더 이상 스페셜 카드를 뽑을 수 없습니다.");
+            return;
+          }
+
+          const [card, ...rest] = specialDeck;
+          setSpecialDeck(rest);
+          setPlayers((prev) =>
+            prev.map((p, idx) =>
+              idx === currentPlayerIndex
+                ? {
+                    ...p,
+                    specials: [...p.specials, card],
+                    specialDraws: p.specialDraws + 1,
+                  }
+                : p
+            )
+          );
+          applySpecialEffect(card);
+          nextPlayer();
+        }
+
+        function canBuyAnyCardForPlayer(player, discount, freeCheap) {
+          const markets = [
+            marketMitigation,
+            marketPreparedness,
+            marketResponse,
+          ];
+          for (const market of markets) {
+            for (const card of market) {
+              const effectiveCost =
+                freeCheap && card.cost <= 70
+                  ? 0
+                  : Math.max(card.cost - discount, 0);
+              if (player.money >= effectiveCost) return true;
+            }
+          }
+          return false;
+        }
+
+        function canCurrentPlayerAct() {
+          if (!currentPlayer) return false;
+          const canBuy = canBuyAnyCardForPlayer(
+            currentPlayer,
+            nextDiscount,
+            freeCheapCard
+          );
+          const canSpecial =
+            specialDeck.length > 0 &&
+            currentPlayer.specialDraws < MAX_SPECIAL_DRAWS;
+          return canBuy || canSpecial;
+        }
+
+        function canAnyPlayerActGlobal() {
+          if (!players.length) return false;
+          const anyCanBuy = players.some((p) =>
+            canBuyAnyCardForPlayer(p, 0, false)
+          );
+          const anyCanSpecial =
+            specialDeck.length > 0 &&
+            players.some((p) => p.specialDraws < MAX_SPECIAL_DRAWS);
+          return anyCanBuy || anyCanSpecial;
+        }
+
+        function canAfford(card) {
+          if (!currentPlayer) return false;
+          if (freeCheapCard && card.cost <= 70) return true;
+          const effectiveCost = Math.max(card.cost - nextDiscount, 0);
+          return currentPlayer.money >= effectiveCost;
+        }
+
+        function handleBuyCard(phase, index) {
+          if (!currentPlayer || gameEnded || !gameStarted) return;
+
+          let market, setMarket, deck, setDeck;
+          if (phase === "Mitigation") {
+            market = marketMitigation;
+            setMarket = setMarketMitigation;
+            deck = mitigationDeck;
+            setDeck = setMitigationDeck;
+          } else if (phase === "Preparedness") {
+            market = marketPreparedness;
+            setMarket = setMarketPreparedness;
+            deck = preparednessDeck;
+            setDeck = setPreparednessDeck;
+          } else {
+            market = marketResponse;
+            setMarket = setMarketResponse;
+            deck = responseDeck;
+            setDeck = setResponseDeck;
+          }
+
+          const card = market[index];
+          if (!card) return;
+          if (!canAfford(card)) {
+            alert("자금이 부족합니다.");
+            return;
+          }
+
+          const effectiveCost =
+            freeCheapCard && card.cost <= 70
+              ? 0
+              : Math.max(card.cost - nextDiscount, 0);
+
+          setPlayers((prev) =>
+            prev.map((p, idx) =>
+              idx === currentPlayerIndex
+                ? {
+                    ...p,
+                    money: p.money - effectiveCost,
+                    cards: [...p.cards, card],
+                  }
+                : p
+            )
+          );
+
+          const newMarket = [...market];
+          if (deck.length > 0) {
+            const [newCard, ...restDeck] = deck;
+            newMarket[index] = newCard;
+            setDeck(restDeck);
+          } else {
+            newMarket.splice(index, 1);
+          }
+          setMarket(newMarket);
+
+          if (nextDiscount > 0) setNextDiscount(0);
+          if (freeCheapCard && card.cost <= 70) setFreeCheapCard(false);
+
+          setLastBoughtCard({
+            card,
+            playerName: currentPlayer.name,
+          });
+
+          nextPlayer();
+        }
+
+        function previewScoresForPlayer(player) {
+          return DISASTER_CARDS.map((d) => {
+            const result = calculateScores([player], d)[0];
+            return {
+              disasterId: d.id,
+              disasterName: d.name,
+              score: result.score,
+            };
+          });
+        }
+
+        useEffect(() => {
+          if (!gameStarted || gameEnded || !currentPlayer) return;
+
+          const canCurrent = canCurrentPlayerAct();
+          if (!canCurrent) {
+            const anyCanAct = canAnyPlayerActGlobal();
+            if (!anyCanAct) {
+              endGame();
+            } else {
+              nextPlayer();
+            }
+          }
+        }, [
+          currentPlayerIndex,
+          players,
+          marketMitigation,
+          marketPreparedness,
+          marketResponse,
+          specialDeck,
+          gameStarted,
+          gameEnded,
+          nextDiscount,
+          freeCheapCard,
+        ]);
+
+        const currentAvatarLabel = currentPlayer
+          ? `P${currentPlayerIndex + 1}`
+          : "";
+
+        return (
+          <div className="app">
+            <header>
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  gap: "12px",
+                }}
+              >
+                <div>
+                  <h1>재난관리 카드 게임</h1>
+                  <small>
+                    Splendor 스타일 · Mitigation / Preparedness / Response · 태그
+                    기반 점수 (시장에서는 재난 태그 숨김)
+                  </small>
+                </div>
+                <button
+                  className="secondary-btn"
+                  onClick={() => setShowTutorial(true)}
+                >
+                  게임 설명
+                </button>
+              </div>
+              <div className="setup">
+                <span>플레이어 수:</span>
+                <select
+                  value={numPlayers}
+                  onChange={(e) => setNumPlayers(Number(e.target.value))}
+                >
+                  <option value={1}>1명 (테스트)</option>
+                  <option value={2}>2명</option>
+                  <option value={3}>3명</option>
+                  <option value={4}>4명</option>
+                </select>
+                <button onClick={startGame}>새 게임 시작</button>
+              </div>
+            </header>
+
+            <main>
+              <div className="left-column">
+                <div className="section-title">
+                  카드 시장
+                  <span>
+                    재난 태그는 구매 후에만 공개됩니다. 한 번의 행동 후 자동으로
+                    다음 플레이어에게 턴이 넘어갑니다.
+                  </span>
+                </div>
+
+                <div className="phase-row">
+                  <div className="phase-row-header">
+                    <div className="phase-name mitigation">
+                      1단계 Mitigation
+                    </div>
+                    <div className="phase-count">
+                      남은 카드: {mitigationDeck.length}
+                    </div>
+                  </div>
+                  <div className="card-row">
+                    {marketMitigation.map((card, idx) => (
+                      <CardView
+                        key={card.id}
+                        card={card}
+                        onBuy={() => handleBuyCard("Mitigation", idx)}
+                        disabled={
+                          !gameStarted || gameEnded || !canAfford(card)
+                        }
+                      />
+                    ))}
+                  </div>
+                </div>
+
+                <div className="phase-row">
+                  <div className="phase-row-header">
+                    <div className="phase-name preparedness">
+                      2단계 Preparedness
+                    </div>
+                    <div className="phase-count">
+                      남은 카드: {preparednessDeck.length}
+                    </div>
+                  </div>
+                  <div className="card-row">
+                    {marketPreparedness.map((card, idx) => (
+                      <CardView
+                        key={card.id}
+                        card={card}
+                        onBuy={() =>
+                          handleBuyCard("Preparedness", idx)
+                        }
+                        disabled={
+                          !gameStarted || gameEnded || !canAfford(card)
+                        }
+                      />
+                    ))}
+                  </div>
+                </div>
+
+                <div className="phase-row">
+                  <div className="phase-row-header">
+                    <div className="phase-name response">
+                      3단계 Response
+                    </div>
+                    <div className="phase-count">
+                      남은 카드: {responseDeck.length}
+                    </div>
+                  </div>
+                  <div className="card-row">
+                    {marketResponse.map((card, idx) => (
+                      <CardView
+                        key={card.id}
+                        card={card}
+                        onBuy={() => handleBuyCard("Response", idx)}
+                        disabled={
+                          !gameStarted || gameEnded || !canAfford(card)
+                        }
+                      />
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              <div className="right-column">
+                <div className="section-title">현재 플레이어 & 행동</div>
+
+                {currentPlayer && (
+                  <div className="player-panel active">
+                    <div className="player-header">
+                      <div className="player-header-left">
+                        <div className="player-avatar">
+                          {currentAvatarLabel}
+                        </div>
+                        <div className="player-name">
+                          {currentPlayer.name}
+                        </div>
+                      </div>
+                      <div className="player-money">
+                        자금: ${currentPlayer.money}
+                      </div>
+                    </div>
+                    <div style={{ fontSize: "11px", marginBottom: "4px" }}>
+                      다음 구매 할인:{" "}
+                      {nextDiscount > 0 ? `-${nextDiscount}` : "없음"} / 무료
+                      카드 권한:{" "}
+                      {freeCheapCard ? "비용 70 이하 1장 무료" : "없음"} / 스페셜
+                      사용 횟수: {currentPlayer.specialDraws}/
+                      {MAX_SPECIAL_DRAWS}
+                    </div>
+                    <div className="controls">
+                      <button
+                        className="secondary-btn"
+                        onClick={handleDrawSpecial}
+                        disabled={
+                          !gameStarted ||
+                          gameEnded ||
+                          specialDeck.length === 0
+                        }
+                      >
+                        스페셜 카드 뽑기
+                      </button>
+                      <button
+                        className="danger-btn"
+                        onClick={endGame}
+                        disabled={!gameStarted || gameEnded}
+                      >
+                        강제 게임 종료 & 점수 계산
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                <div className="section-title">
+                  플레이어 상태
+                  <span>보유 카드 클릭 시 상세 내용을 확인할 수 있습니다.</span>
+                </div>
+                {players.map((p, idx) => {
+                  const previews = previewScoresForPlayer(p);
+                  const avatarLabel = `P${idx + 1}`;
+                  return (
+                    <div
+                      key={p.id}
+                      className={
+                        "player-panel" +
+                        (idx === currentPlayerIndex ? " active" : "")
+                      }
+                    >
+                      <div className="player-header">
+                        <div className="player-header-left">
+                          <div className="player-avatar">
+                            {avatarLabel}
+                          </div>
+                          <div className="player-name">
+                            {p.name}
+                          </div>
+                        </div>
+                        <div className="player-money">
+                          ${p.money}
+                        </div>
+                      </div>
+                      <div className="player-cards">
+                        {p.cards.length === 0 && (
+                          <div style={{ color: "#9ca3af" }}>
+                            아직 카드가 없습니다.
+                          </div>
+                        )}
+                        {p.cards.map((card) => (
+                          <div
+                            key={card.id + "-" + p.id}
+                            className="player-card-item"
+                            onClick={() => setDetailCard(card)}
+                            title="카드 상세 보기"
+                          >
+                            <div className="player-card-name">
+                              {card.name}
+                            </div>
+                            <div>
+                              <span className="badge">
+                                {card.phase}
+                              </span>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                      <div className="preview-table">
+                        {previews.map((pv) => (
+                          <div
+                            key={pv.disasterId}
+                            className="preview-row"
+                          >
+                            <span>{pv.disasterName}</span>
+                            <span>{pv.score}점</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  );
+                })}
+
+                <div className="section-title">재난 & 점수</div>
+                {gameEnded && chosenDisaster && (
+                  <div className="disaster-card">
+                    <div className="disaster-name">
+                      최종 재난: {chosenDisaster.name}
+                    </div>
+                    <div className="card-image-wrapper">
+                      <img
+                        src={chosenDisaster.image}
+                        alt={chosenDisaster.name}
+                      />
+                    </div>
+                    <div className="disaster-desc">
+                      {chosenDisaster.description}
+                    </div>
+                    <div
+                      style={{
+                        fontSize: "11px",
+                        marginBottom: "4px",
+                      }}
+                    >
+                      점수 기준: 해당 태그 카드 1장당{" "}
+                      {chosenDisaster.scoringRule.pointsPerCard}점, All-Hazard
+                      카드는 항상 2점, Mitigation + Preparedness + Response 세트
+                      달성 시 추가{" "}
+                      {chosenDisaster.scoringRule.phaseSetBonus}점
+                    </div>
+                    <div className="disaster-tags">
+                      {chosenDisaster.scoringRule.targetTags.map((t) => (
+                        <span key={t} className="tag">
+                          {t}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {gameEnded && scores && (
+                  <div className="scores">
+                    {scores
+                      .slice()
+                      .sort((a, b) => b.score - a.score)
+                      .map((s, index) => (
+                        <div
+                          key={s.playerId}
+                          className="score-row"
+                        >
+                          <span>
+                            {index + 1}위: {s.name}
+                          </span>
+                          <span>{s.score}점</span>
+                        </div>
+                      ))}
+                  </div>
+                )}
+
+                {!gameEnded && (
+                  <div
+                    style={{
+                      fontSize: "11px",
+                      color: "#6b7280",
+                      marginTop: "8px",
+                    }}
+                  >
+                    모든 플레이어가 더 이상 행동할 수 없으면 게임이 자동
+                    종료되고, 시나리오에 따라 가중치가 적용된 재난 1개가
+                    선택되어 점수가 계산됩니다.
+                  </div>
+                )}
+              </div>
+            </main>
+
+            <footer>
+              덱 크기: Mitigation 40장 · Preparedness 30장 · Response 25장 ·
+              스페셜 20장 · 각 플레이어 스페셜카드 최대 {MAX_SPECIAL_DRAWS}회
+            </footer>
+
+            {showScenarioModal && currentScenario && (
+              <div className="modal modal-large">
+                <div className="modal-title">
+                  마을 시나리오: {currentScenario.name}
+                </div>
+                <div className="modal-image-wrapper">
+                  <img
+                    src={currentScenario.image}
+                    alt={currentScenario.name}
+                  />
+                </div>
+                <div className="modal-body">
+                  <p>{currentScenario.description}</p>
+                  <p style={{ color: "#166534" }}>
+                    이 마을의 특성 때문에 특정 재난의 발생 확률이 높게
+                    설정됩니다. 어떤 재난이 더 자주 일어날 것 같은지
+                    상상해보세요!
+                  </p>
+                </div>
+                <div className="modal-footer">
+                  <button
+                    className="small-btn secondary-btn"
+                    onClick={() => setShowScenarioModal(false)}
+                  >
+                    시작하기
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {lastSpecialDrawn && (
+              <div className="modal modal-large">
+                <div className="modal-title">
+                  스페셜 카드 획득: {lastSpecialDrawn.name}
+                </div>
+                <div className="modal-image-wrapper">
+                  <img
+                    src={lastSpecialDrawn.image}
+                    alt={lastSpecialDrawn.name}
+                  />
+                </div>
+                <div className="modal-body">
+                  <div style={{ marginTop: "4px" }}>
+                    {lastSpecialDrawn.description}
+                  </div>
+                  <div style={{ marginTop: "6px", color: "#166534" }}>
+                    효과: {lastSpecialDrawn.effectText}
+                  </div>
+                </div>
+                <div className="modal-footer">
+                  <button
+                    className="small-btn secondary-btn"
+                    onClick={() => setLastSpecialDrawn(null)}
+                  >
+                    닫기
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {lastBoughtCard && (
+              <div className="modal">
+                <div className="modal-title">
+                  {lastBoughtCard.playerName}이(가) 카드를 획득했습니다
+                </div>
+                <div className="modal-image-wrapper">
+                  <img
+                    src={lastBoughtCard.card.image}
+                    alt={lastBoughtCard.card.name}
+                  />
+                </div>
+                <div className="modal-body">
+                  <div style={{ fontWeight: 600, marginBottom: "4px" }}>
+                    {lastBoughtCard.card.name}
+                  </div>
+                  <div style={{ fontSize: "10px", marginBottom: "4px" }}>
+                    페이즈: {lastBoughtCard.card.phase} / 비용: $
+                    {lastBoughtCard.card.cost}
+                  </div>
+                  <div style={{ marginBottom: "4px" }}>
+                    재난 태그:{" "}
+                    {lastBoughtCard.card.tags.map((t) => (
+                      <span key={t} className="tag">
+                        {t}
+                      </span>
+                    ))}
+                  </div>
+                  {lastBoughtCard.card.domain && (
+                    <div style={{ fontSize: "10px", color: "#6b7280" }}>
+                      도메인: {lastBoughtCard.card.domain}
+                    </div>
+                  )}
+                  <div
+                    style={{
+                      marginTop: "6px",
+                      fontSize: "10px",
+                      color: "#6b7280",
+                    }}
+                  >
+                    오른쪽 패널의 재난별 예상 점수 테이블이 이 카드 효과를
+                    반영해 자동으로 갱신됩니다.
+                  </div>
+                </div>
+                <div className="modal-footer">
+                  <button
+                    className="small-btn secondary-btn"
+                    onClick={() => setLastBoughtCard(null)}
+                  >
+                    확인
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {detailCard && (
+              <div className="modal modal-large">
+                <div className="modal-title">{detailCard.name}</div>
+                <div className="modal-image-wrapper">
+                  <img src={detailCard.image} alt={detailCard.name} />
+                </div>
+                <div className="modal-body">
+                  <div style={{ fontSize: "10px", marginBottom: "4px" }}>
+                    페이즈: {detailCard.phase} / 비용: ${detailCard.cost}
+                  </div>
+                  <div style={{ marginBottom: "4px" }}>
+                    설명: {detailCard.description}
+                  </div>
+                  <div style={{ marginBottom: "4px" }}>
+                    재난 태그:{" "}
+                    {detailCard.tags.map((t) => (
+                      <span key={t} className="tag">
+                        {t}
+                      </span>
+                    ))}
+                  </div>
+                  {detailCard.domain && (
+                    <div style={{ fontSize: "10px", color: "#6b7280" }}>
+                      도메인: {detailCard.domain}
+                    </div>
+                  )}
+                </div>
+                <div className="modal-footer">
+                  <button
+                    className="small-btn secondary-btn"
+                    onClick={() => setDetailCard(null)}
+                  >
+                    닫기
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {showResultModal && gameEnded && chosenDisaster && scores && (
+              <div className="modal modal-large modal-xl">
+                <div className="modal-title" style={{ fontSize: "15px" }}>
+                  게임 종료 결과
+                </div>
+                <div className="modal-body">
+                  <div
+                    style={{
+                      fontSize: "12px",
+                      fontWeight: 600,
+                      marginBottom: "4px",
+                    }}
+                  >
+                    최종 재난: {chosenDisaster.name}
+                  </div>
+                  <div className="modal-image-wrapper" style={{ height: 150 }}>
+                    <img
+                      src={chosenDisaster.image}
+                      alt={chosenDisaster.name}
+                    />
+                  </div>
+                  <div
+                    style={{
+                      fontSize: "10px",
+                      marginBottom: "6px",
+                      marginTop: "4px",
+                    }}
+                  >
+                    {chosenDisaster.description}
+                  </div>
+                  <div
+                    style={{
+                      fontSize: "10px",
+                      color: "#166534",
+                      marginBottom: "6px",
+                    }}
+                  >
+                    점수 기준: 재난 태그 카드 1장당{" "}
+                    {chosenDisaster.scoringRule.pointsPerCard}점, All-Hazard
+                    카드는 2점, Mitigation·Preparedness·Response 세 페이즈를
+                    모두 갖추면 세트 보너스로{" "}
+                    {chosenDisaster.scoringRule.phaseSetBonus}점을 추가로
+                    획득합니다.
+                  </div>
+                  <div className="preview-table">
+                    {scores
+                      .slice()
+                      .sort((a, b) => b.score - a.score)
+                      .map((s, index) => (
+                        <div
+                          key={s.playerId}
+                          className="preview-row"
+                        >
+                          <span>
+                            {index + 1}위: {s.name}
+                          </span>
+                          <span>{s.score}점</span>
+                        </div>
+                      ))}
+                  </div>
+                </div>
+                <div className="modal-footer">
+                  <button
+                    className="small-btn secondary-btn"
+                    onClick={() => setShowResultModal(false)}
+                  >
+                    닫기
+                  </button>
+                  <button
+                    className="small-btn"
+                    style={{ marginLeft: "6px" }}
+                    onClick={handleRestart}
+                  >
+                    다시 시작
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {showTutorial && (
+              <div className="tutorial-modal">
+                <div className="tutorial-title">게임 설명 (Tutorial)</div>
+                <div className="tutorial-body">
+                  <p>
+                    <strong>🎯 게임 목표</strong>
+                    <br />
+                    플레이어들은 초기 자금 <strong>500</strong>으로 시작해서
+                    재난관리 카드를 구매하고, 게임 종료 후 공개되는
+                    <strong> 최종 재난</strong>에 가장 잘 대비한 플레이어가
+                    승리합니다.
+                  </p>
+
+                  <p>
+                    <strong>▶️ 게임 흐름</strong>
+                    <br />
+                    1) 플레이어 수를 정하고, <strong>새 게임 시작</strong>을
+                    누릅니다.
+                    <br />
+                    2) 마을 사진(시나리오)을 보고, 어떤 재난이 나올지
+                    상상합니다.
+                    <br />
+                    3) 자신의 차례가 되면 다음 두 가지 중 <strong>하나</strong>
+                    를 선택합니다:
+                  </p>
+                  <ul>
+                    <li>재난관리 카드 1장 구매</li>
+                    <li>
+                      스페셜 카드 1장 뽑기 (각 플레이어 최대{" "}
+                      {MAX_SPECIAL_DRAWS}회)
+                    </li>
+                  </ul>
+                  <p>
+                    4) 카드를 더 이상 살 수 없거나, 스페셜 카드도 뽑을 수
+                    없으면
+                    <br />
+                    &nbsp;&nbsp;→ 아무 행동 없이 자동으로 턴이 넘어갑니다.
+                    <br />
+                    5) 모든 플레이어가 더 이상 행동할 수 없으면{" "}
+                    <strong>게임이 자동 종료</strong>됩니다.
+                  </p>
+
+                  <p>
+                    <strong>🃏 카드 종류</strong>
+                    <br />
+                    • <strong>재난관리 카드</strong>: Mitigation / Preparedness /
+                    Response 3단계 카드가 있습니다.
+                    <br />
+                    • 시장에서는 <strong>비용, 이름, 설명</strong>만 보고
+                    선택하고,
+                    <br />
+                    &nbsp;&nbsp;어떤 재난 태그(Flood, Heatwave, Pandemic 등)를
+                    갖고 있는지는
+                    <br />
+                    &nbsp;&nbsp;<strong>구매 후</strong>에만 알 수 있습니다.
+                    <br />
+                    • <strong>스페셜 카드</strong>: 자금 +50, +80, 다음 카드
+                    할인, 무료 카드 등
+                    <br />
+                    &nbsp;&nbsp;즉시 발동되는 특수 효과를 갖습니다.
+                  </p>
+
+                  <p>
+                    <strong>📊 점수 계산 방식 (핵심)</strong>
+                    <br />
+                    1) 게임 종료 후, 마을 시나리오에 따라 가중치를 적용해
+                    <br />
+                    &nbsp;&nbsp;<strong>재난 카드 1장</strong>이 랜덤으로
+                    선택됩니다.
+                    <br />
+                    2) 각 플레이어의 보유 카드를 보고 점수를 계산합니다:
+                  </p>
+                  <ul>
+                    <li>
+                      선택된 재난의 <strong>타깃 태그</strong>를 가진 카드 1장당{" "}
+                      <strong>4점</strong>
+                      <br />
+                      (예: 대홍수 재난이면 Flood, Water, Evacuation 태그 카드)
+                    </li>
+                    <li>
+                      <strong>All-Hazard 카드</strong>는 재난과 상관없이 1장당{" "}
+                      <strong>2점</strong>
+                    </li>
+                    <li>
+                      해당 재난에 대해
+                      <br />
+                      &nbsp;&nbsp;Mitigation + Preparedness + Response
+                      <br />
+                      &nbsp;&nbsp;<strong>3개 페이즈를 모두 보유</strong>하고
+                      있으면
+                      <br />
+                      &nbsp;&nbsp;→ <strong>세트 보너스 +6점</strong>
+                    </li>
+                  </ul>
+                  <p>
+                    예를 들어,
+                    <br />
+                    • 대홍수(Flood) 재난에서
+                    <br />
+                    &nbsp;&nbsp;Flood 태그 카드 2장, AllHazard 카드 1장,
+                    <br />
+                    &nbsp;&nbsp;Mitigation / Preparedness / Response 페이즈가
+                    모두 있다면
+                    <br />
+                    → 2장 × 4점 = 8점 + AllHazard 2점 + 세트보너스 6점 =
+                    <strong> 총 16점</strong>
+                  </p>
+
+                  <p>
+                    <strong>🏁 승리 조건</strong>
+                    <br />
+                    · 최종 재난에 대해 <strong>가장 높은 점수</strong>를 얻은
+                    플레이어가 승리합니다.
+                    <br />
+                    · 오른쪽 패널의 "재난별 예상 점수"는 현재 보유 카드로
+                    <br />
+                    &nbsp;&nbsp;각 재난이 나왔을 때 점수를 미리 보여줍니다.
+                    <br />
+                    · 이 정보를 활용해서 어떤 페이즈/재난에 투자할지 전략을
+                    짜보세요.
+                  </p>
+                </div>
+                <div className="tutorial-footer">
+                  <button
+                    className="secondary-btn small-btn"
+                    onClick={() => setShowTutorial(false)}
+                  >
+                    닫기
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        );
+      }
+
+      const root = ReactDOM.createRoot(document.getElementById("root"));
+      root.render(<App />);
+    </script>
+  </body>
+</html>
